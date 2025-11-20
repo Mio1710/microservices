@@ -1,0 +1,104 @@
+version: "3.8"
+services:
+  mongodb:
+    image: mongo:8.0
+    container_name: mongo
+    restart: always
+    ports:
+      - "27017:27017" # Expose MongoDB on the default port
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root # Set the admin username
+      MONGO_INITDB_ROOT_PASSWORD: password # Set the admin password
+    volumes:
+      - mongo-data:/data/db # Persist MongoDB data
+      - mongo-config:/data/configdb # Persist MongoDB configuration
+
+  user:
+    container_name: user
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    restart: always
+    depends_on:
+      - "mongodb"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./user-service:/usr/src/app # Mount entire project
+      - /usr/src/app/node_modules # Preserve node_modules in container
+    command: npm run dev # Override to use dev command
+
+  chat:
+    container_name: chat
+    build:
+      context: ./chat-service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    depends_on:
+      - "mongodb"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./chat-service:/usr/src/app # Mount entire project
+      - /usr/src/app/node_modules # Preserve node_modules in container
+    command: npm run dev # Override to use dev command
+
+  notification:
+    container_name: notification
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    depends_on:
+      - "mongodb"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./notification-service:/usr/src/app # Mount entire project
+      - /usr/src/app/node_modules # Preserve node_modules in container
+    command: npm run dev # Override to use dev command
+
+  frontend:
+    container_name: frontend
+    build:
+      context: ./my-app
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./my-app:/usr/src/app # Mount entire project
+      - /usr/src/app/node_modules # Preserve node_modules in container
+    command: npm run dev # Override to use dev command
+  nginx:
+    container_name: nginx
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - user
+      - chat
+      - notification
+      - frontend
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672" # RabbitMQ default port
+      - "15672:15672" # RabbitMQ management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: user # Set RabbitMQ default user
+      RABBITMQ_DEFAULT_PASS: password # Set RabbitMQ default password
+
+volumes:
+  mongo-data:
+    driver: local
+  mongo-config:
+    driver: local
