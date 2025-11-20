@@ -41,9 +41,13 @@ export const SignUp = () => {
     }
   });
   const onSubmit: SubmitHandler<IRegisterDTO> = async (data: IRegisterDTO) => {
-    useSignUp(data);
-    toast.success('Sign up successful! Please login to your account.');
-    navigate('/login');
+    try {
+      useSignUp(data);
+      toast.success('Sign up successful! Please login to your account.');
+      navigate('/login');
+    } catch {
+      toast.error('Sign up failed! Please try again.');
+    }
   };
 
   return (

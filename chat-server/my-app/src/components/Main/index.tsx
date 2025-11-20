@@ -11,6 +11,8 @@ import ChatSideBar from '../Chat/ChatSideBar';
 
 export function Main() {
   const [conversation, setConversation] = useState<IConversation | null>(null);
+  const [room, setRoom] = useState<string>('');
+
   const getConversation = (id: string) => {
     try {
       const messages = getMessages(id);
@@ -32,7 +34,12 @@ export function Main() {
       <ResizableHandle />
       <ResizablePanel defaultSize={75}>
         <div className="flex h-[calc(100vh_-_90px)] justify-center p-6">
-          <ChatContent conversation={conversation} />
+          <ChatContent
+            conversation={conversation}
+            setConversation={setConversation}
+            room={room}
+            setRoom={setRoom}
+          />
         </div>
       </ResizablePanel>
       <ResizableHandle />

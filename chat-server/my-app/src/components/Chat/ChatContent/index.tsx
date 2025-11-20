@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { getMessages, Message } from '@/api/chat';
 import { IConversation } from '@/api/swr/chat';
 import { useAuthContext } from '@/context/auth-context';
+import { ChatService } from '@/modules/chat/chat.service';
 import {
   EllipsisVertical,
   ImagePlus,
@@ -18,26 +19,36 @@ import {
   Send,
   Video
 } from 'lucide-react';
+import { useSearchParams } from 'react-router';
 import { io, Socket } from 'socket.io-client';
 import { NewChat } from './NewChat';
+const SOCKET_URL = import.meta.env.VITE_CHAT_SERVER_URL || 'http://localhost';
 
-export default function ChatContent({
-  conversation
-}: {
+interface ChatContentProps {
   conversation: IConversation | null;
-}) {
+  setConversation: React.Dispatch<React.SetStateAction<IConversation | null>>;
+  room: string;
+  setRoom: React.Dispatch<React.SetStateAction<string>>;
+}
+export default function ChatContent({
+  conversation,
+  setConversation,
+  room,
+  setRoom
+}: ChatContentProps) {
   const { user } = useAuthContext();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const [params] = useSearchParams();
+  const [messages, setMessages] = useState<Message[] | null>(null);
+  const [socket, setSocket] = useState<Socket>();
   const [text, setText] = useState('');
+  const [newUserId, setNewUserId] = useState<string | null>(null);
   const [createConversationDialogOpened, setCreateConversationDialog] =
     useState(false);
 
   const token = localStorage.getItem('token');
-  console.log('Token:', token);
 
   useEffect(() => {
-    const socketInstance = io('http://localhost', {
+    const socketInstance = io(SOCKET_URL, {
       path: '/chat/socket.io',
       transports: ['websocket', 'polling'],
       auth: { token },
@@ -73,7 +84,10 @@ export default function ChatContent({
 
     const handleReceiveMessage = (msg: Message) => {
       console.log('Message received:', msg);
-      setMessages((prevMessages) => [...prevMessages, msg]);
+      setMessages((prevMessages: Message[] | null) => [
+        ...(prevMessages || []),
+        msg
+      ]);
     };
 
     socket.on('receiveMessage', handleReceiveMessage);
@@ -82,15 +96,26 @@ export default function ChatContent({
     };
   }, [socket]);
 
-  const sendMessage = () => {
-    if (!socket || !conversation || !user) return;
+  const sendMessage = async () => {
+    let conversationId = conversation?._id;
+    if (room === 'new' && newUserId) {
+      const result = await ChatService.createConversation([newUserId]);
+      setRoom(result._id);
+      setConversation(result);
+      console.log('Result: ', result);
+
+      conversationId = result._id;
+    }
+    // if (!socket || !conversation || !user) return;
+    // console.log('Conversation to send messages: ', conversation);
+
     if (conversation) {
       const message = {
         senderId: user?._id,
         message: text,
-        conversationId: conversation._id
+        conversationId: conversationId
       };
-      socket.emit('sendMessage', message);
+      socket?.emit('sendMessage', message);
       setText('');
     }
   };
@@ -99,14 +124,21 @@ export default function ChatContent({
   // Scroll when new messages arrive
   useEffect(() => {
     if (endRef.current) {
-      endRef.current.scrollIntoView({ behavior: "smooth" });
+      endRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
   const partner = conversation?.users.find((item) => item.id !== user?._id);
-
+  useEffect(() => {
+    console.log('Room value: ', room);
+    params.set('room', room);
+    if (room === 'new') {
+      setCreateConversationDialog(false);
+      setMessages([]);
+    }
+  }, [room]);
   return (
     <>
-      {conversation ? (
+      {messages != null ? (
         <div
           className={cn(
             'bg-primary-foreground absolute inset-0 h-full left-full z-50 hidden w-full flex-1 flex-col rounded-md border shadow-xs transition-all duration-200 sm:static sm:z-auto sm:flex'
@@ -187,6 +219,14 @@ export default function ChatContent({
                       </span>
                     </div>
                   ))}
+                  {messages.length === 0 && room === 'new' && (
+                    <div className="text-center text-sm text-muted-foreground">
+                      <span className="border-1 rounded-2xl py-2 px-4">
+                        <span className="mr-2">+</span>
+                        Start a new conversation
+                      </span>
+                    </div>
+                  )}
                   <div ref={endRef} />
                 </div>
               </div>
@@ -273,6 +313,8 @@ export default function ChatContent({
           <NewChat
             onOpenChange={setCreateConversationDialog}
             open={createConversationDialogOpened}
+            setRoom={setRoom}
+            setNewUserId={setNewUserId}
           />
         </div>
       )}
