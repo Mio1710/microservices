@@ -14,6 +14,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { SubmitHandler, useForm } from 'react-hook-form';
 
 import { Link, useNavigate } from 'react-router';
+import { toast } from 'react-toastify';
 import * as z from 'zod';
 
 const SignUpSchema = z.object({
@@ -26,6 +27,7 @@ const SignUpSchema = z.object({
 });
 
 export const SignUp = () => {
+  const navigate = useNavigate();
   const {
     control,
     handleSubmit,
@@ -40,7 +42,7 @@ export const SignUp = () => {
   });
   const onSubmit: SubmitHandler<IRegisterDTO> = async (data: IRegisterDTO) => {
     useSignUp(data);
-    const navigate = useNavigate();
+    toast.success('Sign up successful! Please login to your account.');
     navigate('/login');
   };
 
