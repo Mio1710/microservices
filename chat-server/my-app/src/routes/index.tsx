@@ -11,11 +11,9 @@ export default function RouteApp() {
       <Route element={<AdminLayout />}>
         <Route path="/" element={<Main />} />
         <Route path="/about" element={<About />} />
-        <Route path="/sign-up" element={<SignUp />} />
-        <Route path="/login" element={<Login />} />
-
       </Route>
-      <Route element={<AdminLayout />}></Route>
+      <Route path="/sign-up" element={<SignUp />} />
+      <Route path="/login" element={<Login />} />
       {/* Add more routes as needed */}
     </Routes>
   );

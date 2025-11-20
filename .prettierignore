@@ -3,4 +3,4 @@ node_modules
 build
 coverage
 
-src/components/ui/*
+chat-server/my-app/src/components/ui/*
