@@ -31,7 +31,7 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const login = async (loginData: ILoginDTO) => {
     // Simulate an API call
     const response = await useLogin(loginData);
-    localStorage.setItem('token', response.token);
+    localStorage.setItem('access_token', response.data.access_token);
     setIsAuthenticated(true);
     toast.success('Login successful!');
   };

@@ -3,7 +3,9 @@ import { ILoginDTO, IRegisterDTO, IUser } from '@/type/login';
 import useSWR from 'swr';
 
 interface ILoginResponse {
-  token: string;
+  data: {
+    access_token: string;
+  };
 }
 export const useLogin = (data: ILoginDTO): Promise<ILoginResponse> => {
   return AxiosInstance.post('/user/login', data);

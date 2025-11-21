@@ -25,8 +25,8 @@ AxiosInstance.interceptors.response.use(
 
 AxiosInstance.interceptors.request.use(
   (config) => {
-    // Add any request interceptors here, e.g., adding auth tokens
-    const token = localStorage.getItem('token');
+    // Add token
+    const token = localStorage.getItem('access_token');
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
