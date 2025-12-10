@@ -30,3 +30,7 @@ export const useProfile = () => {
 export const useSignUp = (data: IRegisterDTO): Promise<ILoginResponse> => {
   return AxiosInstance.post('/user/register', data);
 };
+
+export const useRefreshToken = async (): Promise<ILoginResponse> => {
+  return AxiosInstance.post('/user/refresh-token');
+};

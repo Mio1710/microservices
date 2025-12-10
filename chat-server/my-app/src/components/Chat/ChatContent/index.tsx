@@ -45,7 +45,7 @@ export default function ChatContent({
   const [createConversationDialogOpened, setCreateConversationDialog] =
     useState(false);
 
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('access_token') || '';
 
   useEffect(() => {
     const socketInstance = io(SOCKET_URL, {
@@ -97,6 +97,8 @@ export default function ChatContent({
   }, [socket]);
 
   const sendMessage = async () => {
+    console.log('send message: ', conversation?._id, text);
+
     let conversationId = conversation?._id;
     if (room === 'new' && newUserId) {
       const result = await ChatService.createConversation([newUserId]);
@@ -107,7 +109,7 @@ export default function ChatContent({
       conversationId = result._id;
     }
     // if (!socket || !conversation || !user) return;
-    // console.log('Conversation to send messages: ', conversation);
+    console.log('Conversation to send socketsocketsocket: ', socket);
 
     if (conversation) {
       const message = {

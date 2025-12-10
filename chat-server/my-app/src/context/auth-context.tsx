@@ -36,12 +36,12 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
     toast.success('Login successful!');
   };
   const logout = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem('access_token');
     setIsAuthenticated(false);
   };
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token');
     if (token) {
       const getUser = async () => {
         const response = await getProfile();

@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt, { JwtPayload, TokenExpiredError } from "jsonwebtoken";
 import config from "../config/config";
 
 const jwtSecret = config.JWT_SECRET as string;
@@ -18,7 +18,7 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
   try {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
-      res.status(401).json({ message: "No token provided" });
+      res.status(401).json({ message: "No token provided", code: "INVALID_TOKEN" });
       return;
     }
 
@@ -33,7 +33,12 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
 
     next();
   } catch (error: any) {
-    res.status(401).json({ message: "Unauthorized", error: error.message });
+    console.log("error: ", error.message, typeof error, error instanceof TokenExpiredError);
+    let code = "INVALID_TOKEN";
+    if (error instanceof TokenExpiredError) {
+      code = "TOKEN_EXPIRED";
+    }
+    res.status(401).json({ message: "Unauthorized", error: error.message, code });
     return;
   }
 };
