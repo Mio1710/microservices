@@ -2,7 +2,7 @@ version: "3.8"
 services:
   mongodb:
     image: mongo:8.0
-    container_name: mongo
+    container_name: ${PROJECT}-mongo
     restart: always
     ports:
       - "27017:27017" # Expose MongoDB on the default port
@@ -14,7 +14,7 @@ services:
       - mongo-config:/data/configdb # Persist MongoDB configuration
 
   user:
-    container_name: user
+    container_name: ${PROJECT}-user
     build:
       context: ./user-service
       dockerfile: Dockerfile
@@ -31,7 +31,7 @@ services:
     command: npm run dev # Override to use dev command
 
   chat:
-    container_name: chat
+    container_name: ${PROJECT}-chat
     build:
       context: ./chat-service
       dockerfile: Dockerfile
@@ -47,7 +47,7 @@ services:
     command: npm run dev # Override to use dev command
 
   notification:
-    container_name: notification
+    container_name: ${PROJECT}-notification
     build:
       context: ./notification-service
       dockerfile: Dockerfile
@@ -63,7 +63,7 @@ services:
     command: npm run dev # Override to use dev command
 
   frontend:
-    container_name: frontend
+    container_name: ${PROJECT}-frontend
     build:
       context: ./my-app
       dockerfile: Dockerfile
@@ -76,7 +76,7 @@ services:
       - /usr/src/app/node_modules # Preserve node_modules in container
     command: npm run dev # Override to use dev command
   nginx:
-    container_name: nginx
+    container_name: ${PROJECT}-nginx
     build:
       context: ./nginx
       dockerfile: Dockerfile
@@ -89,7 +89,7 @@ services:
       - frontend
   rabbitmq:
     image: rabbitmq:4-management
-    container_name: rabbitmq
+    container_name: ${PROJECT}-rabbitmq
     ports:
       - "5672:5672" # RabbitMQ default port
       - "15672:15672" # RabbitMQ management UI
