@@ -23,7 +23,7 @@ const io = new SocketIOServer(server, {
 });
 io.use((socket, next) => {
   const token = socket.handshake.auth?.token;
-  console.log("Socket token:", token);
+  console.log("Socket token:", socket);
 
   if (!token) return next(new Error("Unauthorized"));
 

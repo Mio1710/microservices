@@ -7,6 +7,7 @@ export interface IUser extends Document {
   password: string;
   createdAt: Date;
   updatedAt: Date;
+  refreshToken?: string;
 }
 
 const UserSchema: Schema = new Schema(
@@ -30,6 +31,11 @@ const UserSchema: Schema = new Schema(
       trim: false,
       required: [true, "Password must be provided"],
       minlength: 8,
+    },
+    refreshToken: {
+      type: String,
+      trim: false,
+      required: false,
     },
   },
   {

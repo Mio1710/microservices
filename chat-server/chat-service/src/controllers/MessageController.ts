@@ -103,14 +103,18 @@ const getAllConversations = async (req: Request, res: Response) => {
 const createConversation = async (req: Request, res: Response) => {
   try {
     const { userIds } = req.body;
-    if (!userIds.includes(req.user._id)) {
-      throw new ApiError(400, "User must be included in the conversation.");
+
+    if (userIds.filter((id: string) => id !== req.user._id).length === 0) {
+      throw new ApiError(400, "Request invalid");
     }
 
+    userIds.push(req.user._id);
+    userIds.sort();
+
     const existingConversation = await Conversation.findOne({
-      userIds: { $all: userIds },
+      users: { $all: userIds },
     });
-    console.log("existingConversation:", existingConversation);
+    console.log("existingConversation:", existingConversation, userIds);
 
     if (existingConversation) {
       throw new ApiError(400, "Conversation already exists.");
@@ -124,7 +128,7 @@ const createConversation = async (req: Request, res: Response) => {
       data: newConversation,
     });
   } catch (error: any) {
-    res.json({
+    res.status(error.statusCode || 500).json({
       status: error.statusCode || 500,
       message: error.message,
     });

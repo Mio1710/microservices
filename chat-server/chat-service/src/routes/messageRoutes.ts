@@ -8,7 +8,7 @@ const messageRoutes = Router();
 
 messageRoutes.post("/send", [authMiddleware, validate(sendMessageSchema)], MessageController.send);
 messageRoutes.post(
-  "/conversation",
+  "/conversations",
   [authMiddleware, validate(createConversationSchema)],
   MessageController.createConversation
 );

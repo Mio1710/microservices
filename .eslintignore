@@ -1,0 +1,3 @@
+# .eslintignore
+
+chat-server/my-app/src/components/ui
