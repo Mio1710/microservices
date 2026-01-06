@@ -10,15 +10,16 @@ import { useState } from 'react';
 import { Fragment } from 'react/jsx-runtime';
 
 export default function ChatSideBar({
-  setConversation
+  setConversation,
+  conversation
 }: {
   setConversation: React.Dispatch<React.SetStateAction<IConversation | null>>;
+  conversation: IConversation[] | null;
 }) {
   const [search, setSearch] = useState('');
   const { user } = useAuthContext();
 
   const { data, isLoading, isError } = useChat();
-  console.log('Conversations:', data, isLoading, isError);
 
   return (
     <>
