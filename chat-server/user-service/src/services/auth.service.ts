@@ -65,6 +65,7 @@ class AuthService {
       if (!user || !(await bcrypt.compare(password, user.password as string))) {
         throw new ApiError(401, "Incorrect email or password");
       }
+      console.log("Login success");
 
       const tokenPayload: JWTPayload = {
         id: user.id,

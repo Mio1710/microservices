@@ -21,7 +21,9 @@ AxiosInstance.interceptors.response.use(
       if (error.response?.data?.code === 'TOKEN_EXPIRED') {
         console.log('Session expired. Get new token.');
         // call to refresh token endpoint could be placed here
-        // return Promise.reject(error);
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('authSession');
+        return Promise.reject(error);
       }
       if (error.response?.data?.code === 'UNAUTHORIZED') {
         toast.error('You can not access this resource');

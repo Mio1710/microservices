@@ -3,6 +3,7 @@ import { Message } from "../database";
 // import { AuthRequest } from "../middleware";
 import Conversation from "../database/models/ConversationModel";
 import { ApiError, handleMessageReceived } from "../utils";
+import { ReqParser } from "../utils/req-parser";
 
 const send = async (req: Request, res: Response) => {
   try {
@@ -54,6 +55,7 @@ const validateSendData = async (senderId: string, conversationId: string) => {
 
 const getConversation = async (req: Request, res: Response) => {
   try {
+    const { page, limit, offset } = ReqParser.parsePaginationParams(req);
     const { conversationId } = req.params;
     console.log("Fetching conversation with ID:", conversationId);
 
@@ -61,8 +63,9 @@ const getConversation = async (req: Request, res: Response) => {
       conversationId,
     })
       .select("_id senderId message createdAt")
-      .sort({ createdAt: 1 });
-
+      .sort({ createdAt: 1 })
+      .limit(limit)
+      .skip(offset * (page - 1));
     return void res.json({
       status: 200,
       message: "Messages retrieved successfully!",
@@ -78,6 +81,7 @@ const getConversation = async (req: Request, res: Response) => {
 
 const getAllConversations = async (req: Request, res: Response) => {
   try {
+    const { page, limit, offset } = ReqParser.parsePaginationParams(req);
     const userId = req.user._id;
     console.log("Fetching all conversations for user ID:", userId);
 
@@ -86,7 +90,10 @@ const getAllConversations = async (req: Request, res: Response) => {
     })
       .populate("users", "name email")
       .populate("lastMessage", "message senderId")
-      .sort({ createdAt: -1 });
+      .sort({ updatedAt: -1 })
+      .limit(limit)
+      .skip(offset * (page - 1));
+
     res.json({
       status: 200,
       message: "Conversations retrieved successfully!",
