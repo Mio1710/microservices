@@ -10,15 +10,11 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { NavLink, useNavigate } from 'react-router';
+import { useAuthContext } from '@/context/auth-context';
+import { NavLink } from 'react-router';
 
 export function ProfileDropdown() {
-
-  const logout = () => {
-    localStorage.removeItem('token');
-    const navigate = useNavigate();
-    navigate('/login');
-  };
+  const { logout } = useAuthContext();
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>

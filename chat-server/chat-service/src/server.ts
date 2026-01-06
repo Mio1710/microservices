@@ -1,79 +1,65 @@
-import { Server } from "http";
-import jwt from "jsonwebtoken";
-import { Socket, Server as SocketIOServer } from "socket.io";
-import app from "./app";
-import config from "./config/config";
-import { Message, connectDB } from "./database";
-import Conversation from "./database/models/ConversationModel";
+// import jwt from "jsonwebtoken";
+// import { Socket } from "socket.io";
+// import config from "./config/config";
+// import { Message, connectDB } from "./database";
+// import Conversation from "./database/models/ConversationModel";
 
-let server: Server;
-connectDB();
+// connectDB();
 
-server = app.listen(config.PORT, () => {
-  console.log(`Server is running on port ${config.PORT}`);
-});
-const io = new SocketIOServer(server, {
-  path: "/socket.io",
-  pingInterval: 25000,
-  pingTimeout: 60000,
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-  },
-});
-io.use((socket, next) => {
-  const token = socket.handshake.auth?.token;
-  console.log("Socket token:", socket);
+// io.use((socket, next) => {
+//   const token = socket.handshake.auth?.token;
+//   console.log("Socket token:", socket);
 
-  if (!token) return next(new Error("Unauthorized"));
+//   if (!token) return next(new Error("Unauthorized"));
 
-  try {
-    const jwtSecret = config.JWT_SECRET as string;
-    const payload = jwt.verify(token, jwtSecret);
-    socket.data.user = payload;
-    next();
-  } catch {
-    next(new Error("Unauthorized"));
-  }
-});
-io.on("connection", (socket: Socket) => {
-  io.to(socket.id).emit("Client connected");
-  socket.on("disconnect", () => {
-    io.to(socket.id).emit("Client disconnected");
-  });
+//   try {
+//     const jwtSecret = config.JWT_SECRET as string;
+//     const payload = jwt.verify(token, jwtSecret);
+//     socket.data.user = payload;
+//     next();
+//   } catch {
+//     next(new Error("Unauthorized"));
+//   }
+// });
 
-  socket.on("sendMessage", async (data) => {
-    const { senderId, conversationId, message } = data;
-    console.log("Message received logger:", data, conversationId);
+// io.on("connection", (socket: Socket) => {
+//   io.to(socket.id).emit("Client connected");
+//   socket.on("disconnect", () => {
+//     io.to(socket.id).emit("Client disconnected");
+//   });
 
-    const msg = new Message({ senderId, conversationId, message });
-    await msg.save();
-    await Conversation.updateOne({ _id: conversationId }, { lastMessage: msg._id });
+//   socket.on("sendMessage", async (data) => {
+//     const { senderId, conversationId, message } = data;
+//     console.log("Message received logger:", data, conversationId);
 
-    // Emit to all clients in the room including the sender
-    io.to(conversationId).emit("receiveMessage", msg);
-  });
+//     const msg = new Message({ senderId, conversationId, message });
+//     await msg.save();
+//     await Conversation.updateOne({ _id: conversationId }, { lastMessage: msg._id });
 
-  socket.on("joinRoom", (roomId) => {
-    socket.join(roomId);
-  });
-});
+//     // Emit to all clients in the room including the sender
+//     io.to(conversationId).emit("receiveMessage", msg);
+//   });
 
-const exitHandler = () => {
-  if (server) {
-    server.close(() => {
-      console.info("Server closed");
-      process.exit(1);
-    });
-  } else {
-    process.exit(1);
-  }
-};
+//   socket.on("joinRoom", (roomId) => {
+//     socket.join(roomId);
+//   });
+// });
 
-const unexpectedErrorHandler = (error: unknown) => {
-  console.error(error);
-  exitHandler();
-};
+// const exitHandler = () => {
+//   if (server) {
+//     server.close(() => {
+//       console.info("Server closed");
+//       process.exit(1);
+//     });
+//   } else {
+//     process.exit(1);
+//   }
+// };
 
-process.on("uncaughtException", unexpectedErrorHandler);
-process.on("unhandledRejection", unexpectedErrorHandler);
+// const unexpectedErrorHandler = (error: unknown) => {
+//   console.error(error);
+//   exitHandler();
+// };
+
+// process.on("uncaughtException", unexpectedErrorHandler);
+// process.on("unhandledRejection", unexpectedErrorHandler);

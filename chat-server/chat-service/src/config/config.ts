@@ -3,7 +3,7 @@ import { config } from "dotenv";
 const configFile = `./.env`;
 config({ path: configFile });
 
-const { MONGO_URI, PORT, JWT_SECRET, NODE_ENV, MESSAGE_BROKER_URL } = process.env;
+const { MONGO_URI, PORT, JWT_SECRET, NODE_ENV, MESSAGE_BROKER_URL, REDIS_HOST, REDIS_PORT } = process.env;
 
 const queue = { notifications: "NOTIFICATIONS" };
 
@@ -14,4 +14,8 @@ export default {
   env: NODE_ENV,
   msgBrokerURL: MESSAGE_BROKER_URL,
   queue,
+  redis: {
+    host: REDIS_HOST,
+    port: REDIS_PORT,
+  },
 };

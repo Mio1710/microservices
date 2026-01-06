@@ -37,7 +37,10 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
   };
   const logout = () => {
     localStorage.removeItem('access_token');
+    const checkToken = localStorage.getItem('access_token');
+    console.log('Token after logout:', checkToken);
     setIsAuthenticated(false);
+    navigate('/login');
   };
 
   useEffect(() => {

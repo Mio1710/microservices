@@ -1,5 +1,0 @@
-{
-	"dependencies": {
-		"@nestjs/cqrs": "^11.0.3"
-	}
-}
