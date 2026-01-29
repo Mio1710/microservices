@@ -18,7 +18,7 @@ export const registerSocketEvents = (httpServer: Server) => {
 
   io.on("connection", async (socket: Socket) => {
     // await markUserOnline(socket.data.user.id);
-    socket.broadcast.emit("userOnline", socket.data.user.id);
+    socket.broadcast.emit("userOnline", socket.data?.user?.id);
 
     socket.on("joinRoom", async (partnerId: number) => {
       socket.join(partnerId.toString());

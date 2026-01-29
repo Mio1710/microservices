@@ -1,6 +1,8 @@
-FROM node:22.0.0-alpine
+FROM node:24-alpine
 
 WORKDIR /usr/src/app
+
+RUN rm -rf node_modules
 
 COPY package*.json ./
 
@@ -10,6 +12,6 @@ COPY . .
 
 RUN npm run build
 
-EXPOSE 8081
+EXPOSE 8082
 
 CMD [ "npm", "start" ]

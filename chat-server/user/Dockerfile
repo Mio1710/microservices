@@ -1,4 +1,4 @@
-FROM node:22.18-alpine
+FROM node:24-alpine
 
 WORKDIR /usr/src/app
 
@@ -10,6 +10,6 @@ COPY . .
 
 RUN npm run build
 
-EXPOSE 5173
+EXPOSE 8081
 
 CMD [ "npm", "start" ]

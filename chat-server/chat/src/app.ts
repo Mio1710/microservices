@@ -4,12 +4,13 @@ import config from "./config/config";
 import { errorConverter, errorHandler } from "./middleware";
 import userRouter from "./routes/messageRoutes";
 import { registerSocketEvents } from "./socket/events";
+import { connectDB } from "./database";
 
 const app: Express = express();
 const server = http.createServer(app);
 
 registerSocketEvents(server);
-
+connectDB();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(userRouter);

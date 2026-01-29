@@ -1,4 +1,7 @@
 version: "3.8"
+networks:
+  app-network:
+    driver: bridge
 services:
   mongodb:
     image: mongo:8.0
@@ -12,12 +15,16 @@ services:
     volumes:
       - mongo-data:/data/db # Persist MongoDB data
       - mongo-config:/data/configdb # Persist MongoDB configuration
+    networks:
+      - app-network
 
   user:
     container_name: ${PROJECT}-user
     build:
-      context: ./user-service
+      context: ./user
       dockerfile: Dockerfile
+    env_file:
+      - ./docker/env/user/.env
     ports:
       - "8081:8081"
     restart: always
@@ -26,15 +33,19 @@ services:
     environment:
       - NODE_ENV=development
     volumes:
-      - ./user-service:/usr/src/app # Mount entire project
+      - ./user:/usr/src/app # Mount entire project
       - /usr/src/app/node_modules # Preserve node_modules in container
     command: npm run dev # Override to use dev command
+    networks:
+      - app-network
 
   chat:
     container_name: ${PROJECT}-chat
     build:
-      context: ./chat-service
+      context: ./chat
       dockerfile: Dockerfile
+    env_file:
+      - ./docker/env/chat/.env
     ports:
       - "8082:8082"
     depends_on:
@@ -42,15 +53,19 @@ services:
     environment:
       - NODE_ENV=development
     volumes:
-      - ./chat-service:/usr/src/app # Mount entire project
+      - ./chat:/usr/src/app # Mount entire project
       - /usr/src/app/node_modules # Preserve node_modules in container
     command: npm run dev # Override to use dev command
+    networks:
+      - app-network
 
   notification:
     container_name: ${PROJECT}-notification
     build:
       context: ./notification-service
       dockerfile: Dockerfile
+    env_file:
+      - ./docker/env/notification/.env
     ports:
       - "8083:8083"
     depends_on:
@@ -61,20 +76,24 @@ services:
       - ./notification-service:/usr/src/app # Mount entire project
       - /usr/src/app/node_modules # Preserve node_modules in container
     command: npm run dev # Override to use dev command
+    networks:
+      - app-network
 
   frontend:
     container_name: ${PROJECT}-frontend
     build:
-      context: ./my-app
+      context: ./frontend
       dockerfile: Dockerfile
-    ports:
-      - "5173:5173"
-    environment:
-      - NODE_ENV=development
+    # ports:
+    #   - "5173:5173"
+    env_file:
+      - ./docker/env/frontend/.env
     volumes:
-      - ./my-app:/usr/src/app # Mount entire project
+      - ./frontend:/usr/src/app # Mount entire project
       - /usr/src/app/node_modules # Preserve node_modules in container
     command: npm run dev # Override to use dev command
+    networks:
+      - app-network
   nginx:
     container_name: ${PROJECT}-nginx
     build:
@@ -87,6 +106,8 @@ services:
       - chat
       - notification
       - frontend
+    networks:
+      - app-network
   rabbitmq:
     image: rabbitmq:4-management
     container_name: ${PROJECT}-rabbitmq

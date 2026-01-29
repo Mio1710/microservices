@@ -1,7 +1,6 @@
 import { config } from "dotenv";
 
-const configFile = `./.env`;
-config({ path: configFile });
+config();
 
 const { MONGO_URI, PORT, JWT_SECRET, NODE_ENV, MESSAGE_BROKER_URL, REDIS_HOST, REDIS_PORT } = process.env;
 
