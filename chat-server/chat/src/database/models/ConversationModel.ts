@@ -14,7 +14,7 @@ const ConversationSchema: Schema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const Conversation = mongoose.model<IConversation>("Conversation", ConversationSchema);

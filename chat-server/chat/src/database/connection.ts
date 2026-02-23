@@ -3,11 +3,11 @@ import config from "../config/config";
 
 export const connectDB = async () => {
   try {
-    console.info("Connecting to database..." + config.MONGO_URI);
+    console.log("Connecting to database..." + config.MONGO_URI);
     await mongoose.connect(config.MONGO_URI!);
-    console.info("Database connected");
+    console.log("Database connected");
   } catch (error) {
-    console.error(error);
+    console.error("DB error: ", error);
     process.exit(1);
   }
 };

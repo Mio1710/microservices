@@ -13,29 +13,33 @@ class RabbitMQService {
   }
 
   async init() {
-    const connection = await amqp.connect(config.msgBrokerURL!);
-    this.channel = await connection.createChannel();
-    await this.channel.assertQueue(this.requestQueue);
-    await this.channel.assertQueue(this.responseQueue);
+    try {
+      const connection = await amqp.connect(config.msgBrokerURL!);
+      this.channel = await connection.createChannel();
+      await this.channel.assertQueue(this.requestQueue);
+      await this.channel.assertQueue(this.responseQueue);
 
-    this.channel.consume(
-      this.responseQueue,
-      (msg) => {
-        if (msg) {
-          console.log("Received response:", msg.content.toString());
+      this.channel.consume(
+        this.responseQueue,
+        (msg) => {
+          if (msg) {
+            console.log("Received response:", msg.content.toString());
 
-          const correlationId = msg.properties.correlationId;
-          const user = JSON.parse(msg.content.toString());
+            const correlationId = msg.properties.correlationId;
+            const user = JSON.parse(msg.content.toString());
 
-          const callback = this.correlationMap.get(correlationId);
-          if (callback) {
-            callback(user);
-            this.correlationMap.delete(correlationId);
+            const callback = this.correlationMap.get(correlationId);
+            if (callback) {
+              callback(user);
+              this.correlationMap.delete(correlationId);
+            }
           }
-        }
-      },
-      { noAck: true }
-    );
+        },
+        { noAck: true },
+      );
+    } catch (error) {
+      console.error("Amqplib error: ", error);
+    }
   }
 
   async requestUserDetails(userId: string, callback: Function) {
@@ -49,7 +53,7 @@ class RabbitMQService {
     messageContent: string,
     senderEmail: string,
     senderName: string,
-    conversationId: string
+    conversationId: string,
   ) {
     console.log("Notifying receiver:", receiverId, messageContent, senderEmail, senderName, conversationId);
 

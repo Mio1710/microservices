@@ -34,7 +34,7 @@ declare global {
 const jwtSecret = config.JWT_SECRET as string;
 
 const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
-  const authHeader = req.headers.authorization;
+  const authHeader = req.headers?.authorization;
   if (!authHeader) {
     return next(new ApiError(401, "Missing authorization header"));
   }
@@ -54,7 +54,7 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
     next();
   } catch (error) {
     console.error(error);
-    new ApiError(401, "Invalid token");
+    res.status(401).json({ message: "Invalid or expired token" });
   }
 };
 

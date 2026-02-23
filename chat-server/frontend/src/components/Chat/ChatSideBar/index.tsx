@@ -1,4 +1,4 @@
-import { IConversation, useChat } from '@/api/swr/chat';
+import { IConversation } from '@/api/swr/chat';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -10,16 +10,16 @@ import { useState } from 'react';
 import { Fragment } from 'react/jsx-runtime';
 
 export default function ChatSideBar({
-  setConversation,
-  conversation
+  activeChat,
+  setActiveChat,
+  conversations
 }: {
-  setConversation: React.Dispatch<React.SetStateAction<IConversation | null>>;
-  conversation: IConversation[] | null;
+  activeChat: string;
+  setActiveChat: React.Dispatch<React.SetStateAction<string>>;
+  conversations: IConversation[] | null;
 }) {
   const [search, setSearch] = useState('');
   const { user } = useAuthContext();
-
-  const { data, isLoading, isError } = useChat();
 
   return (
     <>
@@ -50,9 +50,11 @@ export default function ChatSideBar({
         </div>
 
         <ScrollArea className="-mx-3 h-[calc(100%_-_100px)] p-3">
-          {data.map((conversation) => {
+          {conversations?.map((conversation) => {
+            console.log('Check data: ', conversation);
+
             const { _id, users, lastMessage } = conversation;
-            const otherUser = users.find((u) => u.id !== user?._id);
+            const otherUser = users.find((u) => u._id !== user?._id);
             const lastMsg =
               lastMessage?.senderId === user?._id
                 ? `You: ${lastMessage?.message}`
@@ -66,7 +68,7 @@ export default function ChatSideBar({
                     conversation?._id === _id && 'sm:bg-muted'
                   )}
                   onClick={() => {
-                    setConversation(conversation);
+                    setActiveChat(conversation._id);
                   }}
                 >
                   <div className="flex gap-2">

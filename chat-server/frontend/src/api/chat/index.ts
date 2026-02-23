@@ -1,4 +1,5 @@
 import AxiosInstance from '@/lib/axios';
+import { AxiosResponse } from 'axios';
 export interface Message {
   _id: string;
   senderId: string;
@@ -10,9 +11,6 @@ export const getAllConversations = async () => {
 };
 export const getMessages = async (
   conversationId: string
-): Promise<Message[]> => {
-  const response = await AxiosInstance.get(
-    `/chat/conversation/${conversationId}`
-  );
-  return response.data;
+): Promise<AxiosResponse<Message[]>> => {
+  return await AxiosInstance.get(`/chat/conversation/${conversationId}`);
 };

@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import { getAllConversations } from '../chat';
+import { getAllConversations, getMessages, Message } from '../chat';
 
 export interface IConversation {
   _id: string;
@@ -10,7 +10,7 @@ export interface IConversation {
   };
   users: [
     {
-      id: string;
+      _id: string;
       name: string;
       email: string;
     }
@@ -27,5 +27,20 @@ export const useChat = () => {
     data: conversation,
     isLoading,
     isError: error
+  };
+};
+
+export const useMessages = (id: string) => {
+  const { data, error, isLoading, mutate } = useSWR(
+    id && id !== 'new-chat' ? `/chat/conversation/${id}` : null,
+    () => getMessages(id)
+  );
+  const conversation: Message[] = data?.data || [];
+
+  return {
+    data: conversation,
+    isLoading,
+    isError: error,
+    mutate
   };
 };

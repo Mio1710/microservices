@@ -60,7 +60,7 @@ const getConversation = async (req: Request, res: Response) => {
     console.log("Fetching conversation with ID:", conversationId);
 
     const messages = await Message.find({
-      conversationId,
+      conversation: conversationId,
     })
       .select("_id senderId message createdAt")
       .sort({ createdAt: 1 })
@@ -83,8 +83,6 @@ const getAllConversations = async (req: Request, res: Response) => {
   try {
     const { page, limit, offset } = ReqParser.parsePaginationParams(req);
     const userId = req.user._id;
-    console.log("Fetching all conversations for user ID:", userId);
-
     const conversations = await Conversation.find({
       users: { $in: [userId] },
     })

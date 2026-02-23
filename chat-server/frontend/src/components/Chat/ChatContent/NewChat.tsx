@@ -21,11 +21,11 @@ import React, { useEffect, useState } from 'react';
 
 type Props = {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
-  setRoom: React.Dispatch<React.SetStateAction<string>>;
-  setNewUserId: (userId: string) => void;
+  setOpen: (open: boolean) => void;
+  setActiveChat: React.Dispatch<React.SetStateAction<string>>;
+  setNewUserId: (user: IUser) => void;
 };
-export function NewChat({ onOpenChange, open, setRoom, setNewUserId }: Props) {
+export function NewChat({ setOpen, open, setActiveChat, setNewUserId }: Props) {
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
   const [search, setSearch] = useState('');
   // const [users, setUsers] = useState<IUser[]>([])
@@ -35,10 +35,10 @@ export function NewChat({ onOpenChange, open, setRoom, setNewUserId }: Props) {
     if (!open) {
       setSelectedUser(null);
     }
-  }, [open]);
+  }, [open, setActiveChat]);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={() => setOpen(!open)}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>New message</DialogTitle>
@@ -105,9 +105,10 @@ export function NewChat({ onOpenChange, open, setRoom, setNewUserId }: Props) {
             variant={'default'}
             disabled={selectedUser === null}
             onClick={() => {
-              setRoom('new');
               if (selectedUser) {
-                setNewUserId(selectedUser._id);
+                setNewUserId(selectedUser);
+                setActiveChat('new-chat');
+                setOpen(false);
               }
             }}
           >

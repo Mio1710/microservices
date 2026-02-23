@@ -17,8 +17,9 @@ export interface IMessage extends Document {
 
 const MessageSchema: Schema = new Schema(
   {
-    conversationId: {
-      type: String,
+    conversation: {
+      type: Schema.Types.ObjectId,
+      ref: "Conversation",
       required: true,
     },
     senderId: {
@@ -37,7 +38,7 @@ const MessageSchema: Schema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const Message = mongoose.model<IMessage>("Message", MessageSchema);

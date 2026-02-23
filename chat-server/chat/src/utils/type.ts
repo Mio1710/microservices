@@ -1,7 +1,6 @@
 export interface MessagePayload {
-  groupId?: number;
-  receiverId?: number;
-  content: string;
+  conversationId: number;
+  message: string;
   parentMessageId?: number;
   senderId: number;
 }

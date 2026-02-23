@@ -7,9 +7,6 @@ import { registerSocketEvents } from "./socket/events";
 import { connectDB } from "./database";
 
 const app: Express = express();
-const server = http.createServer(app);
-
-registerSocketEvents(server);
 connectDB();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -17,6 +14,8 @@ app.use(userRouter);
 app.use(errorConverter);
 app.use(errorHandler);
 
-server.listen(config.PORT, () => {
+const server = app.listen(config.PORT, () => {
   console.log(`Server is running on port ${config.PORT}`);
 });
+
+registerSocketEvents(server);

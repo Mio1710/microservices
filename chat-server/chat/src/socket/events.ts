@@ -1,7 +1,7 @@
 import { Server } from "http";
 import { Socket, Server as SocketIOServer } from "socket.io";
+import { Conversation } from "../database";
 import { insertMessage } from "../services/Message.service";
-import { roomKeys } from "../utils/roomKeys";
 
 const onlineUsers = new Map<string, string>();
 
@@ -16,52 +16,50 @@ export const registerSocketEvents = (httpServer: Server) => {
     },
   });
 
-  io.on("connection", async (socket: Socket) => {
-    // await markUserOnline(socket.data.user.id);
-    socket.broadcast.emit("userOnline", socket.data?.user?.id);
+  // No authentication middleware; allow all connections
 
-    socket.on("joinRoom", async (partnerId: number) => {
-      socket.join(partnerId.toString());
+  io.on("connection", async (socket: Socket) => {
+    console.log("Socket connected: ", socket.id);
+
+    socket.on("joinRoom", async (activeChat: number) => {
+      console.log("Join room", activeChat);
+      socket.join(activeChat?.toString?.() || String(activeChat));
     });
 
-    socket.on("createMessage", async ({ groupId, receiverId, text, parentMessageId }, cb) => {
+    socket.on("sendMessage", async (data, cb) => {
       try {
-        if (!groupId && !receiverId) {
-          throw new Error("Please provide either group id or receiver id");
+        const { conversationId, message, senderId, parentMessageId } = data;
+
+        console.log("New message", data, conversationId);
+        if (!conversationId) {
+          throw new Error("Please provide a conversation id");
         }
 
-        const message = await insertMessage({
-          groupId,
-          receiverId,
-          content: text,
-          senderId: socket.data.user.id,
+        // Use a default senderId and username since no auth
+        const newMessage = await insertMessage({
+          conversationId,
+          message,
+          senderId,
           parentMessageId,
         });
-
-        const newMessage = {
-          ...message,
-          username: socket.data.user.username,
-        };
-
-        // group message
-        if (message.groupId) {
-          io.to(roomKeys.GROUP_KEY(message.groupId)).emit("newMessage", newMessage);
-        }
+        console.log("Create new message success: ", newMessage, conversationId);
+        await Conversation.updateOne({ _id: conversationId }, { lastMessage: newMessage._id });
+        io.to(conversationId).emit("newMessage", newMessage);
 
         // direct message
-        if (message.receiverId) {
-          // emit event to sender
-          io.to(roomKeys.USER_KEY(socket.data.user.id)).emit("newMessage", newMessage);
+        // if (message.receiverId) {
+        // emit event to sender (anonymous)
+        //   io.to(roomKeys.USER_KEY("anonymous")).emit("newMessage", newMessage);
 
-          // emit event to receiver
-          io.to(roomKeys.USER_KEY(message.receiverId)).emit("newMessage", {
-            ...newMessage,
-            chatName: newMessage.username,
-          });
-        }
-        cb({ message });
+        //   // emit event to receiver
+        //   // io.to(roomKeys.USER_KEY(message.receiverId)).emit("newMessage", {
+        //   //   ...newMessage,
+        //   //   chatName: newMessage.username,
+        //   // });
+        // }
+        // cb({ message });
       } catch (error) {
-        cb({ error });
+        // cb({ error });
       }
     });
 
@@ -69,10 +67,12 @@ export const registerSocketEvents = (httpServer: Server) => {
       console.log("socket error:", err);
     });
 
-    socket.on("disconnect", async () => {
-      //   await markUserOffline(socket.data.user.id);
-
-      socket.broadcast.emit("userOffline", socket.data.user.id);
+    socket.on("disconnect", async (data) => {
+      console.log("disconnect Socket server successfully", JSON.stringify(data));
     });
+  });
+  console.log("Start Socket server successfully");
+  io.on("error", (err) => {
+    console.log("Socket server error:", err);
   });
 };
