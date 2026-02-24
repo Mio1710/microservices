@@ -57,13 +57,13 @@ const getConversation = async (req: Request, res: Response) => {
   try {
     const { page, limit, offset } = ReqParser.parsePaginationParams(req);
     const { conversationId } = req.params;
-    console.log("Fetching conversation with ID:", conversationId);
+    console.log("Fetching conversation with ID:", conversationId, limit, offset, page);
 
     const messages = await Message.find({
       conversation: conversationId,
     })
       .select("_id senderId message createdAt")
-      .sort({ createdAt: 1 })
+      .sort({ createdAt: -1 })
       .limit(limit)
       .skip(offset * (page - 1));
     return void res.json({

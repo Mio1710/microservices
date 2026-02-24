@@ -1,86 +1,37 @@
-import { useChat, useMessages } from '@/api/swr/chat';
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup
 } from '@/components/ui/resizable';
-import { useAuthContext } from '@/context/auth-context';
+import { useSocket } from '@/context/chat-context';
 import { cn } from '@/lib/utils';
-import { ChatService } from '@/modules/chat/chat.service';
 import { IUser } from '@/type/login';
 import { MessagesSquare } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { useState } from 'react';
 import ChatContent from '../Chat/ChatContent';
 import { NewChat } from '../Chat/ChatContent/NewChat';
 import ChatSideBar from '../Chat/ChatSideBar';
 import { Button } from '../ui/button';
 
-const SOCKET_URL = import.meta.env.VITE_CHAT_SERVER_URL || 'http://localhost';
-const token = localStorage.getItem('access_token') || '';
-
 export function Main() {
-  const [activeChat, setActiveChat] = useState<string>('');
-  const [partner, setPartner] = useState<IUser | null>(null);
-  const { data: conversations } = useChat();
-  const { data: messages, mutate: mutateMessages } = useMessages(activeChat);
-
-  const { user } = useAuthContext();
-
   const [createConversationDialogOpened, setCreateConversationDialog] =
     useState(false);
+  const [partner, setPartner] = useState<IUser | null>(null);
+  // const { data: conversations } = useChat();
 
-  const socketInstance = io(SOCKET_URL, {
-    path: '/chat/socket.io',
-    transports: ['websocket'],
-    auth: { token },
-    withCredentials: true
-  });
+  const { messages, sendMessage, activeChat, setActiveChat, conversations } =
+    useSocket();
 
-  const [socket, setSocket] = useState<Socket>(socketInstance);
-  socketInstance.connect();
-  console.log(socketInstance);
-  socketInstance.on('connect_error', (err) => {
-    console.error('Socket connection error:', err.message);
-  });
-  socketInstance.on('connect', () => {
-    console.log('Socket connected:', socketInstance.id);
-  });
-  socketInstance.on('disconnect', (reason) => {
-    console.log('Socket disconnected:', reason);
-  });
-
-  socketInstance.on('newMessage', (message) => {
-    console.log('Socket newMessage newMessagenewMessage:', message);
-    mutateMessages();
-  });
-
-  const handleSendMessage = async (text: string) => {
-    console.log('send message: ', activeChat, text);
-
-    const message = {
-      senderId: user?._id,
-      message: text,
-      conversationId: activeChat
-    };
-    socket?.emit('sendMessage', message);
-
-    // if (!socket || !conversation || !user) return;
-    console.log('Conversation to send socketsocketsocket: ', socket);
-  };
-
-  useEffect(() => {
-    if (!socket) return;
-    if (activeChat == 'new-chat' && partner?._id && partner._id !== user?._id) {
-      const createNewChat = async () => {
-        const result = await ChatService.createConversation([partner._id]);
-        console.log('Result: ', result);
-        setActiveChat(result._id);
-      };
-      createNewChat();
-    }
-    socket.emit('joinRoom', activeChat);
-  }, [activeChat, socket]);
+  // useEffect(() => {
+  //   if (activeChat == 'new-chat' && partner?._id && partner._id !== user?._id) {
+  //     const createNewChat = async () => {
+  //       const result = await ChatService.createConversation([partner._id]);
+  //       console.log('Result: ', result);
+  //       setActiveChat(result._id);
+  //     };
+  //     createNewChat();
+  //   }
+  // }, [activeChat, messagesFetch]);
 
   return (
     <ResizablePanelGroup
@@ -90,7 +41,6 @@ export function Main() {
       <ResizablePanel defaultSize={25} minSize={20} maxSize={35}>
         <div className="flex h-[calc(100vh_-_90px)] justify-center p-6">
           <ChatSideBar
-            activeChat={activeChat}
             setActiveChat={setActiveChat}
             conversations={conversations}
           />
@@ -102,8 +52,8 @@ export function Main() {
           {activeChat ? (
             <ChatContent
               messages={messages}
-              handleSendMessage={handleSendMessage}
               partner={partner}
+              handleSendMessage={sendMessage}
             />
           ) : (
             <div

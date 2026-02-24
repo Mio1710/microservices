@@ -1,0 +1,132 @@
+// src/context/SocketContext.tsx
+import { getAllConversations, getMessages, Message } from '@/api/chat';
+import { IConversation, useChat } from '@/api/swr/chat';
+import { SendMessage } from '@/components/Chat/types';
+import { socketInstance } from '@/socket/handleConnect';
+import { IUser } from '@/type/login';
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState
+} from 'react';
+import { useAuthContext } from './auth-context';
+
+interface SocketContextType {
+  messages: Message[];
+  sendMessage: (text: string) => void;
+  activeChat: string;
+  setActiveChat: React.Dispatch<React.SetStateAction<string>>;
+  conversations: IConversation[];
+}
+
+const SocketContext = createContext<SocketContextType | undefined>(undefined);
+
+export const SocketProvider = ({ children }: { children: ReactNode }) => {
+  const { data: initConversations } = useChat();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [conversations, setConversations] =
+    useState<IConversation[]>(initConversations);
+  const [activeChat, setActiveChat] = useState<string>('');
+  const [onlineUsers, setOnlineUsers] = useState<IUser[]>([]);
+  const [isConnected, setIsConnected] = useState(socketInstance.connected);
+  const { user } = useAuthContext();
+
+  const updateSidebar = (msg: Message) => {
+    setConversations((prev) => {
+      // find the conversation, update last message and move it to the top
+      const idx = prev.findIndex((c) => c._id === msg.conversationId);
+      if (idx === -1) return prev; // conversation not found, ignore
+
+      const updated = [...prev];
+      const conv = updated[idx];
+      conv.lastMessage = {
+        id: msg._id || '',
+        senderId: msg.senderId,
+        message: msg.message
+      };
+      // move to top
+      updated.splice(idx, 1);
+      updated.unshift(conv);
+      return updated;
+    });
+  };
+  useEffect(() => {
+    socketInstance.auth = { userId: user?._id };
+    socketInstance.connect();
+
+    // Event Handlers
+    const onConnect = () => setIsConnected(true);
+    const onDisconnect = () => setIsConnected(false);
+    const onMessage = (msg: Message) => {
+      setMessages((prev) => [msg, ...prev]);
+      updateSidebar(msg);
+    };
+    const onStatusChange = (users: IUser[]) => setOnlineUsers(users);
+
+    socketInstance.on('connect', onConnect);
+    socketInstance.on('disconnect', onDisconnect);
+    socketInstance.on('newMessage', onMessage);
+    socketInstance.on('user_status_change', onStatusChange);
+
+    return () => {
+      socketInstance.off('connect', onConnect);
+      socketInstance.off('disconnect', onDisconnect);
+      socketInstance.off('newMessage', onMessage);
+      socketInstance.off('user_status_change', onStatusChange);
+      socketInstance.disconnect();
+    };
+  }, [user?._id]);
+
+  useEffect(() => {
+    if (activeChat) {
+      // Optionally, you can emit an event to join a specific chat room
+      socketInstance.emit('joinRoom', activeChat);
+      // get message for this conversation
+      const fetchMessages = async () => {
+        const { data } = await getMessages(activeChat);
+        const { data: conversationsData } = await getAllConversations();
+        setMessages(data);
+      };
+      fetchMessages();
+    }
+    console.log('Check conversation: ', conversations);
+  }, [activeChat]);
+
+  useEffect(() => {
+    setConversations(initConversations || []);
+  }, [initConversations]);
+
+  const sendMessage = (text: string) => {
+    // TypeScript will error here if you forget a required field
+    const messageData: SendMessage = {
+      conversationId: activeChat,
+      senderId: user?._id || '',
+      message: text
+    };
+    socketInstance.emit('sendMessage', messageData);
+  };
+
+  return (
+    <SocketContext.Provider
+      value={{
+        messages,
+        sendMessage,
+        activeChat,
+        setActiveChat,
+        conversations
+      }}
+    >
+      {children}
+    </SocketContext.Provider>
+  );
+};
+
+// Custom hook with a check to ensure it's used within a Provider
+export const useSocket = () => {
+  const context = useContext(SocketContext);
+  if (!context)
+    throw new Error('useSocket must be used within a SocketProvider');
+  return context;
+};

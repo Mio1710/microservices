@@ -10,11 +10,9 @@ import { useState } from 'react';
 import { Fragment } from 'react/jsx-runtime';
 
 export default function ChatSideBar({
-  activeChat,
   setActiveChat,
   conversations
 }: {
-  activeChat: string;
   setActiveChat: React.Dispatch<React.SetStateAction<string>>;
   conversations: IConversation[] | null;
 }) {
@@ -51,8 +49,6 @@ export default function ChatSideBar({
 
         <ScrollArea className="-mx-3 h-[calc(100%_-_100px)] p-3">
           {conversations?.map((conversation) => {
-            console.log('Check data: ', conversation);
-
             const { _id, users, lastMessage } = conversation;
             const otherUser = users.find((u) => u._id !== user?._id);
             const lastMsg =

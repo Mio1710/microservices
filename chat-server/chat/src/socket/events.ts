@@ -44,7 +44,13 @@ export const registerSocketEvents = (httpServer: Server) => {
         });
         console.log("Create new message success: ", newMessage, conversationId);
         await Conversation.updateOne({ _id: conversationId }, { lastMessage: newMessage._id });
-        io.to(conversationId).emit("newMessage", newMessage);
+        io.to(conversationId).emit("newMessage", {
+          createdAt: newMessage.createdAt,
+          message: newMessage.message,
+          senderId: newMessage.senderId,
+          _id: newMessage._id,
+          conversationId,
+        });
 
         // direct message
         // if (message.receiverId) {

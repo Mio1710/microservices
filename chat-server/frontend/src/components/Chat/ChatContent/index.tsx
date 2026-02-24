@@ -103,7 +103,7 @@ export default function ChatContent({
       {/* Conversation */}
       <div className="gap-2 rounded-md pl-4 pt-0 pb-4 h-[calc(100%_-_120px)]">
         <ScrollArea className="h-full">
-          <div className="flex w-full  row flex-col justify-start gap-4 py-2 pr-4 pb-4">
+          <div className="flex w-full row justify-start flex-col-reverse gap-4 py-2 pr-4 pb-4">
             {messages.map((msg, index) => (
               <div
                 key={`${msg?.senderId}-${msg?.createdAt}-${index}`}
@@ -133,8 +133,8 @@ export default function ChatContent({
                 </span>
               </div>
             )}
-            <div ref={endRef} />
           </div>
+          <div ref={endRef} />
         </ScrollArea>
         <div className="flex w-full flex-none gap-2 pr-4">
           <div className="border-input focus-within:ring-ring flex flex-1 items-center gap-2 rounded-md border px-2 py-1 focus-within:ring-1 focus-within:outline-hidden lg:gap-4">

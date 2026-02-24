@@ -2,6 +2,7 @@ import { BrowserRouter } from 'react-router';
 import { ToastContainer } from 'react-toastify';
 import './App.css';
 import { AuthProvider } from './context/auth-context';
+import { SocketProvider } from './context/chat-context';
 import { ThemeProvider } from './context/theme-context';
 import RouteApp from './routes';
 
@@ -11,7 +12,9 @@ function App() {
       <ThemeProvider>
         <BrowserRouter>
           <AuthProvider>
-            <RouteApp />
+            <SocketProvider>
+              <RouteApp />
+            </SocketProvider>
           </AuthProvider>
         </BrowserRouter>
         <ToastContainer />
