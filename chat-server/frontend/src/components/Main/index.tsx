@@ -45,6 +45,7 @@ export function Main() {
           <ChatSideBar
             setActiveChat={setActiveChat}
             conversations={conversations}
+            setCreateConversationDialog={setCreateConversationDialog}
           />
         </div>
       </ResizablePanel>
@@ -53,7 +54,7 @@ export function Main() {
         <div className="flex h-[calc(100vh_-_90px)] justify-center p-6">
           {activeChat ? (
             <ChatContent
-              messages={messages}
+              messages={messages ?? []}
               partner={partner}
               handleSendMessage={sendMessage}
             />
@@ -83,14 +84,14 @@ export function Main() {
                   {activeChat} --- {partner?.name}
                 </div>
               </div>
-              <NewChat
-                setOpen={setCreateConversationDialog}
-                open={createConversationDialogOpened}
-                setActiveChat={setActiveChat}
-                setNewUserId={setPartner}
-              />
             </div>
           )}
+          <NewChat
+            setOpen={setCreateConversationDialog}
+            open={createConversationDialogOpened}
+            setActiveChat={setActiveChat}
+            setNewUserId={setPartner}
+          />
         </div>
       </ResizablePanel>
       <ResizableHandle />

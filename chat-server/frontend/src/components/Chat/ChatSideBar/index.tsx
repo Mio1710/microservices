@@ -11,10 +11,12 @@ import { Fragment } from 'react/jsx-runtime';
 
 export default function ChatSideBar({
   setActiveChat,
-  conversations
+  conversations,
+  setCreateConversationDialog
 }: {
   setActiveChat: React.Dispatch<React.SetStateAction<string>>;
   conversations: IConversation[] | null;
+  setCreateConversationDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const [search, setSearch] = useState('');
   const { user } = useAuthContext();
@@ -29,7 +31,12 @@ export default function ChatSideBar({
               <MessagesSquare size={20} />
             </div>
 
-            <Button size="icon" variant="ghost" className="rounded-lg">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="rounded-lg"
+              onClick={() => setCreateConversationDialog(true)}
+            >
               <Edit size={24} className="stroke-muted-foreground" />
             </Button>
           </div>

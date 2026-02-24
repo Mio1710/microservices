@@ -140,9 +140,37 @@ const createConversation = async (req: Request, res: Response) => {
   }
 };
 
+const getConversationId = async (req: Request, res: Response) => {
+  try {
+    const { userIds } = req.query;
+
+    if (!userIds || typeof userIds !== "string") {
+      throw new ApiError(400, "Invalid userIds parameter");
+    }
+
+    const sortedUserIds = userIds.split(",").sort();
+
+    const existingConversation = await Conversation.findOne({
+      users: { $all: sortedUserIds },
+    });
+
+    res.json({
+      status: 200,
+      message: "Conversation ID retrieved successfully!",
+      data: { conversationId: existingConversation?._id ?? null },
+    });
+  } catch (error: any) {
+    res.json({
+      status: 500,
+      message: error.message,
+    });
+  }
+};
+
 export default {
   send,
   getConversation,
   createConversation,
   getAllConversations,
+  getConversationId,
 };

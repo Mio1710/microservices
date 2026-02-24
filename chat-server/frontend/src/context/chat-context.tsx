@@ -52,6 +52,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
     });
   };
   useEffect(() => {
+    if (!user) return;
     socketInstance.auth = { userId: user?._id };
     socketInstance.connect();
 
@@ -89,12 +90,9 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
       };
       fetchMessages();
     }
-    console.log('Check conversation: ', conversations);
-  }, [activeChat]);
-
-  useEffect(() => {
     setConversations(initConversations);
-  }, [initConversations]);
+    console.log('Check conversation: ', conversations);
+  }, [activeChat, initConversations]);
 
   const sendMessage = (text: string) => {
     // TypeScript will error here if you forget a required field

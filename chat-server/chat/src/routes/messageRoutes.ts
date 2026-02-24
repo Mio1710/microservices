@@ -10,9 +10,9 @@ messageRoutes.post("/send", [authMiddleware, validate(sendMessageSchema)], Messa
 messageRoutes.post(
   "/conversations",
   [authMiddleware, validate(createConversationSchema)],
-  MessageController.createConversation
+  MessageController.createConversation,
 );
 messageRoutes.get("/all-conversations", authMiddleware, MessageController.getAllConversations);
 messageRoutes.get("/conversation/:conversationId", authMiddleware, MessageController.getConversation);
-
+messageRoutes.get("/get-conversation-id", authMiddleware, MessageController.getConversationId);
 export default messageRoutes;

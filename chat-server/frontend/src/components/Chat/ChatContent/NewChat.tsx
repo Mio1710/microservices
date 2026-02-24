@@ -1,3 +1,4 @@
+import { getConversationId } from '@/api/chat';
 import { useUser } from '@/api/swr/user';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,8 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog';
+import { useAuthContext } from '@/context/auth-context';
+import { ChatService } from '@/modules/chat/chat.service';
 import { IUser } from '@/type/login';
 import { Check, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
@@ -30,12 +33,29 @@ export function NewChat({ setOpen, open, setActiveChat, setNewUserId }: Props) {
   const [search, setSearch] = useState('');
   // const [users, setUsers] = useState<IUser[]>([])
   const { users } = useUser({ search });
+  const { user: authUser } = useAuthContext();
 
   useEffect(() => {
     if (!open) {
       setSelectedUser(null);
     }
   }, [open, setActiveChat]);
+
+  const onStartChat = async () => {
+    if (selectedUser && authUser) {
+      setNewUserId(selectedUser);
+      setOpen(false);
+      const userIds = [selectedUser._id, authUser._id];
+      // check if this conversation already exists
+      let conversation = await getConversationId(userIds);
+      let conversationId = conversation.data.conversationId;
+      if (!conversation.data.conversationId) {
+        const newConv = await ChatService.createConversation(userIds);
+        conversationId = newConv._id;
+      }
+      setActiveChat(conversationId);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={() => setOpen(!open)}>
@@ -73,44 +93,43 @@ export function NewChat({ setOpen, open, setActiveChat, setNewUserId }: Props) {
             <CommandList>
               <CommandEmpty>No people found.</CommandEmpty>
               <CommandGroup>
-                {users.map((user) => (
-                  <CommandItem
-                    key={user._id}
-                    onSelect={() => setSelectedUser(user)}
-                    className="flex items-center justify-between gap-2"
-                  >
-                    <div className="flex items-center gap-2">
-                      <img
-                        src={'/default.jpg'}
-                        alt={user.name}
-                        className="h-8 w-8 rounded-full"
-                      />
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium">{user.name}</span>
-                        <span className="text-muted-foreground text-xs">
-                          {user.email}
-                        </span>
-                      </div>
-                    </div>
+                {users.map(
+                  (user) =>
+                    user._id != authUser?._id && (
+                      <CommandItem
+                        key={user._id}
+                        onSelect={() => setSelectedUser(user)}
+                        className="flex items-center justify-between gap-2"
+                      >
+                        <div className="flex items-center gap-2">
+                          <img
+                            src={'/default.jpg'}
+                            alt={user.name}
+                            className="h-8 w-8 rounded-full"
+                          />
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium">
+                              {user.name}
+                            </span>
+                            <span className="text-muted-foreground text-xs">
+                              {user.email}
+                            </span>
+                          </div>
+                        </div>
 
-                    {selectedUser && selectedUser._id === user._id && (
-                      <Check className="h-4 w-4" />
-                    )}
-                  </CommandItem>
-                ))}
+                        {selectedUser && selectedUser._id === user._id && (
+                          <Check className="h-4 w-4" />
+                        )}
+                      </CommandItem>
+                    )
+                )}
               </CommandGroup>
             </CommandList>
           </Command>
           <Button
             variant={'default'}
             disabled={selectedUser === null}
-            onClick={() => {
-              if (selectedUser) {
-                setNewUserId(selectedUser);
-                setActiveChat('new-chat');
-                setOpen(false);
-              }
-            }}
+            onClick={onStartChat}
           >
             Chat
           </Button>

@@ -18,3 +18,11 @@ export const getMessages = async (
 ): Promise<AxiosResponse<Message[]>> => {
   return await AxiosInstance.get(`/chat/conversation/${conversationId}`);
 };
+
+export const getConversationId = async (
+  userIds: string[]
+): Promise<AxiosResponse<{ conversationId: string }>> => {
+  return await AxiosInstance.get('/chat/get-conversation-id', {
+    params: { userIds: userIds.join(',') }
+  });
+};
