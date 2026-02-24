@@ -21,7 +21,7 @@ import {
 interface ChatContentProps {
   messages: Message[];
   handleSendMessage: (text: string) => void;
-  partner: IUser | null;
+  partner: Pick<IUser, '_id' | 'name' | 'email'> | null;
 }
 export default function ChatContent({
   messages,
@@ -58,7 +58,9 @@ export default function ChatContent({
           <div className="flex items-center gap-2 lg:gap-4">
             <Avatar className="size-9 lg:size-11">
               <AvatarImage
-                src={'https://randomuser.me/api/portraits/men/32.jpg'}
+                src={
+                  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxSaIyHu2I35lFsiOuo4kUQ8GnWun7NxdCMQ&s'
+                }
                 alt={partner?.name}
               />
               <AvatarFallback>{partner?.name}</AvatarFallback>
@@ -67,7 +69,7 @@ export default function ChatContent({
               <span className="col-start-2 row-span-2 text-sm font-medium lg:text-base">
                 {partner?.name}
               </span>
-              <span className="text-muted-foreground col-start-2 row-span-2 row-start-2 line-clamp-1 block max-w-32 text-xs text-nowrap text-ellipsis lg:max-w-none lg:text-sm">
+              <span className="text-muted-foreground col-start-2 row-span-2 row-start-2 line-clamp-1 block max-w-64 text-xs text-nowrap text-ellipsis lg:max-w-none lg:text-sm">
                 {partner?.email}
               </span>
             </div>

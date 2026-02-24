@@ -70,7 +70,9 @@ export default function ChatSideBar({
                   <div className="flex gap-2">
                     <Avatar>
                       <AvatarImage
-                        src={'https://randomuser.me/api/portraits/men/32.jpg'}
+                        src={
+                          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxSaIyHu2I35lFsiOuo4kUQ8GnWun7NxdCMQ&s'
+                        }
                         alt={otherUser?.name}
                       />
                       <AvatarFallback>{otherUser?.name}</AvatarFallback>
@@ -79,7 +81,7 @@ export default function ChatSideBar({
                       <span className="col-start-2 row-span-2 font-medium">
                         {otherUser?.name}
                       </span>
-                      <span className="text-muted-foreground col-start-2 row-span-2 row-start-2 line-clamp-2 text-ellipsis">
+                      <span className="text-muted-foreground col-start-2 row-span-2 row-start-2 line-clamp-1 block max-w-full text-xs text-nowrap text-ellipsis lg:max-w-none lg:text-sm">
                         {lastMsg}
                       </span>
                     </div>

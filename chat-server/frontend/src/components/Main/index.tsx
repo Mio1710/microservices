@@ -7,7 +7,7 @@ import { useSocket } from '@/context/chat-context';
 import { cn } from '@/lib/utils';
 import { IUser } from '@/type/login';
 import { MessagesSquare } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ChatContent from '../Chat/ChatContent';
 import { NewChat } from '../Chat/ChatContent/NewChat';
 import ChatSideBar from '../Chat/ChatSideBar';
@@ -16,22 +16,24 @@ import { Button } from '../ui/button';
 export function Main() {
   const [createConversationDialogOpened, setCreateConversationDialog] =
     useState(false);
-  const [partner, setPartner] = useState<IUser | null>(null);
-  // const { data: conversations } = useChat();
+  const [partner, setPartner] = useState<Pick<
+    IUser,
+    '_id' | 'name' | 'email'
+  > | null>(null);
 
   const { messages, sendMessage, activeChat, setActiveChat, conversations } =
     useSocket();
 
-  // useEffect(() => {
-  //   if (activeChat == 'new-chat' && partner?._id && partner._id !== user?._id) {
-  //     const createNewChat = async () => {
-  //       const result = await ChatService.createConversation([partner._id]);
-  //       console.log('Result: ', result);
-  //       setActiveChat(result._id);
-  //     };
-  //     createNewChat();
-  //   }
-  // }, [activeChat, messagesFetch]);
+  useEffect(() => {
+    if (activeChat) {
+      const currentPartner = conversations
+        ?.find((c) => c._id === activeChat)
+        ?.users.find((u) => u._id !== partner?._id);
+      if (currentPartner) {
+        setPartner(currentPartner);
+      }
+    }
+  }, [activeChat]);
 
   return (
     <ResizablePanelGroup

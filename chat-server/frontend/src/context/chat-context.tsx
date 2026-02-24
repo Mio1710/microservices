@@ -1,5 +1,5 @@
 // src/context/SocketContext.tsx
-import { getAllConversations, getMessages, Message } from '@/api/chat';
+import { getMessages, Message } from '@/api/chat';
 import { IConversation, useChat } from '@/api/swr/chat';
 import { SendMessage } from '@/components/Chat/types';
 import { socketInstance } from '@/socket/handleConnect';
@@ -35,21 +35,20 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
 
   const updateSidebar = (msg: Message) => {
     setConversations((prev) => {
-      // find the conversation, update last message and move it to the top
       const idx = prev.findIndex((c) => c._id === msg.conversationId);
-      if (idx === -1) return prev; // conversation not found, ignore
+      if (idx === -1) return prev;
 
-      const updated = [...prev];
-      const conv = updated[idx];
-      conv.lastMessage = {
-        id: msg._id || '',
-        senderId: msg.senderId,
-        message: msg.message
+      const updatedConv = {
+        ...prev[idx],
+        lastMessage: {
+          id: msg._id || '',
+          senderId: msg.senderId,
+          message: msg.message
+        }
       };
-      // move to top
-      updated.splice(idx, 1);
-      updated.unshift(conv);
-      return updated;
+
+      const remaining = prev.filter((_, i) => i !== idx);
+      return [updatedConv, ...remaining];
     });
   };
   useEffect(() => {
@@ -86,7 +85,6 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
       // get message for this conversation
       const fetchMessages = async () => {
         const { data } = await getMessages(activeChat);
-        const { data: conversationsData } = await getAllConversations();
         setMessages(data);
       };
       fetchMessages();
@@ -95,7 +93,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
   }, [activeChat]);
 
   useEffect(() => {
-    setConversations(initConversations || []);
+    setConversations(initConversations);
   }, [initConversations]);
 
   const sendMessage = (text: string) => {
