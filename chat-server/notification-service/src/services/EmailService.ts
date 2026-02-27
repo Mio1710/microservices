@@ -5,17 +5,28 @@ export class EmailService {
   private transporter;
 
   constructor() {
-    console.log("Initializing EmailService with SMTP configuration:", config.smtp);
-
-    this.transporter = nodemailer.createTransport({
-      host: config.smtp.host,
-      port: config.smtp.port,
-      secure: false,
-      auth: {
-        user: config.smtp.user,
-        pass: config.smtp.pass,
-      },
-    });
+    if (config.smtp.service === "gmail") {
+      this.transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          type: "OAuth2",
+          user: config.smtp.user,
+          clientId: config.smtp.googleClientId,
+          clientSecret: config.smtp.googleClientSecret,
+          refreshToken: config.smtp.googleRefreshToken,
+        },
+      });
+    } else {
+      this.transporter = nodemailer.createTransport({
+        host: config.smtp.host,
+        port: config.smtp.port,
+        secure: false, // true for 465, false for other ports
+        auth: {
+          user: config.smtp.user,
+          pass: config.smtp.pass,
+        },
+      });
+    }
   }
 
   async sendEmail(to: string, subject: string, content: string) {

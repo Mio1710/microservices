@@ -3,6 +3,7 @@ import { getMessages, Message } from '@/api/chat';
 import { IConversation, useChat } from '@/api/swr/chat';
 import { SendMessage } from '@/components/Chat/types';
 import { socketInstance } from '@/socket/handleConnect';
+import { createSocketHandlers } from '@/socket/handlers';
 import { IUser } from '@/type/login';
 import {
   createContext,
@@ -56,25 +57,23 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
     socketInstance.auth = { userId: user?._id };
     socketInstance.connect();
 
-    // Event Handlers
-    const onConnect = () => setIsConnected(true);
-    const onDisconnect = () => setIsConnected(false);
-    const onMessage = (msg: Message) => {
-      setMessages((prev) => [msg, ...prev]);
-      updateSidebar(msg);
-    };
-    const onStatusChange = (users: IUser[]) => setOnlineUsers(users);
+    const handlers = createSocketHandlers(
+      setIsConnected,
+      setMessages,
+      updateSidebar,
+      setOnlineUsers
+    );
 
-    socketInstance.on('connect', onConnect);
-    socketInstance.on('disconnect', onDisconnect);
-    socketInstance.on('newMessage', onMessage);
-    socketInstance.on('user_status_change', onStatusChange);
+    socketInstance.on('connect', handlers.onConnect);
+    socketInstance.on('disconnect', handlers.onDisconnect);
+    socketInstance.on('newMessage', handlers.onMessage);
+    socketInstance.on('user_status_change', handlers.onStatusChange);
 
     return () => {
-      socketInstance.off('connect', onConnect);
-      socketInstance.off('disconnect', onDisconnect);
-      socketInstance.off('newMessage', onMessage);
-      socketInstance.off('user_status_change', onStatusChange);
+      socketInstance.off('connect', handlers.onConnect);
+      socketInstance.off('disconnect', handlers.onDisconnect);
+      socketInstance.off('newMessage', handlers.onMessage);
+      socketInstance.off('user_status_change', handlers.onStatusChange);
       socketInstance.disconnect();
     };
   }, [user?._id]);
@@ -99,6 +98,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
     const messageData: SendMessage = {
       conversationId: activeChat,
       senderId: user?._id || '',
+      senderName: user?.name || '',
       message: text
     };
     socketInstance.emit('sendMessage', messageData);

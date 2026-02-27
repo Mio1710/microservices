@@ -2,6 +2,7 @@ import { Server } from "http";
 import { Socket, Server as SocketIOServer } from "socket.io";
 import { Conversation } from "../database";
 import { insertMessage } from "../services/Message.service";
+import { handleMessageReceived } from "../utils";
 
 const onlineUsers = new Map<string, string>();
 
@@ -28,7 +29,7 @@ export const registerSocketEvents = (httpServer: Server) => {
 
     socket.on("sendMessage", async (data, cb) => {
       try {
-        const { conversationId, message, senderId, parentMessageId } = data;
+        const { conversationId, message, senderId, senderName, parentMessageId } = data;
 
         console.log("New message", data, conversationId);
         if (!conversationId) {
@@ -44,6 +45,17 @@ export const registerSocketEvents = (httpServer: Server) => {
         });
         console.log("Create new message success: ", newMessage, conversationId);
         await Conversation.updateOne({ _id: conversationId }, { lastMessage: newMessage._id });
+        const conversion = await Conversation.findById(conversationId);
+        if (!conversion) {
+          throw new Error("Conversation not found");
+        }
+        await handleMessageReceived(
+          senderName,
+          message,
+          conversationId,
+          conversion.users.map((user) => user._id?.toString() ?? "").filter((id) => id !== senderId),
+        );
+
         io.to(conversationId).emit("newMessage", {
           createdAt: newMessage.createdAt,
           message: newMessage.message,

@@ -6,7 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import { useAuthContext } from '@/context/auth-context';
 import { cn } from '@/lib/utils';
 import { Edit, MessagesSquare, Search } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Fragment } from 'react/jsx-runtime';
 
 export default function ChatSideBar({
@@ -20,6 +20,25 @@ export default function ChatSideBar({
 }) {
   const [search, setSearch] = useState('');
   const { user } = useAuthContext();
+
+  // Memoize filtered conversations
+  const filteredConversations = useMemo(() => {
+    if (!conversations) return [];
+    if (!search) return conversations;
+    return conversations.filter((conv) => {
+      const otherUser = conv.users.find((u) => u._id !== user?._id);
+      return (
+        otherUser?.name?.toLowerCase().includes(search.toLowerCase()) ||
+        conv.lastMessage?.message?.toLowerCase().includes(search.toLowerCase())
+      );
+    });
+  }, [conversations, search, user]);
+
+  // Memoize click handler
+  const handleSetActiveChat = useCallback(
+    (id: string) => setActiveChat(id),
+    [setActiveChat]
+  );
 
   return (
     <>
@@ -55,7 +74,7 @@ export default function ChatSideBar({
         </div>
 
         <ScrollArea className="-mx-3 h-[calc(100%_-_100px)] p-3">
-          {conversations?.map((conversation) => {
+          {filteredConversations.map((conversation) => {
             const { _id, users, lastMessage } = conversation;
             const otherUser = users.find((u) => u._id !== user?._id);
             const lastMsg =
@@ -70,9 +89,7 @@ export default function ChatSideBar({
                     `hover:bg-secondary/75 -mx-1 flex w-full rounded-md px-2 py-2 text-left text-sm`,
                     conversation?._id === _id && 'sm:bg-muted'
                   )}
-                  onClick={() => {
-                    setActiveChat(conversation._id);
-                  }}
+                  onClick={() => handleSetActiveChat(conversation._id)}
                 >
                   <div className="flex gap-2">
                     <Avatar>

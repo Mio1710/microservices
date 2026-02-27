@@ -48,14 +48,8 @@ class RabbitMQService {
     this.channel.sendToQueue(this.requestQueue, Buffer.from(JSON.stringify({ userId })), { correlationId });
   }
 
-  async notifyReceiver(
-    receiverId: string,
-    messageContent: string,
-    senderEmail: string,
-    senderName: string,
-    conversationId: string,
-  ) {
-    console.log("Notifying receiver:", receiverId, messageContent, senderEmail, senderName, conversationId);
+  async notifyReceiver(receiverId: string, messageContent: string, senderName: string, conversationId: string) {
+    console.log("Notifying receiver:", receiverId, messageContent, senderName, conversationId);
 
     await this.requestUserDetails(receiverId, async (user: any) => {
       const notificationPayload = {
@@ -63,7 +57,6 @@ class RabbitMQService {
         userId: receiverId,
         userEmail: user.email,
         message: messageContent,
-        from: senderEmail,
         fromName: senderName,
         conversationId,
       };

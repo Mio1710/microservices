@@ -13,6 +13,10 @@ const {
   SMTP_PORT = 587,
   SMTP_USER,
   SMTP_PASS,
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
+  GOOGLE_REFRESH_TOKEN,
+  MAIL_SERVICE,
 } = process.env;
 
 const queue = { notifications: "NOTIFICATIONS" };
@@ -25,9 +29,13 @@ export default {
   EMAIL_FROM,
   queue,
   smtp: {
+    service: MAIL_SERVICE || "gmail",
     host: SMTP_HOST,
     port: SMTP_PORT as number,
     user: SMTP_USER,
     pass: SMTP_PASS,
+    googleClientId: GOOGLE_CLIENT_ID,
+    googleClientSecret: GOOGLE_CLIENT_SECRET,
+    googleRefreshToken: GOOGLE_REFRESH_TOKEN,
   },
 };

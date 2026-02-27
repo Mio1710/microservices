@@ -22,7 +22,7 @@ const send = async (req: Request, res: Response) => {
     const listReceivers = conversation.users
       .filter((user) => user._id !== _id)
       .map((user) => user._id?.toString() ?? "");
-    await handleMessageReceived(name, email, message, conversationId, listReceivers);
+    await handleMessageReceived(name, message, conversationId, listReceivers);
 
     return void res.json({
       status: 200,
