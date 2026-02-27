@@ -3,14 +3,16 @@
   "version": "1.0.0",
   "main": "src/server.ts",
   "scripts": {
-  "dev": "NODE_ENV=development nodemon src/server.ts",
+    "dev": "NODE_ENV=development nodemon src/server.ts",
     "build": "rm -rf build/ && tsc -p .",
-    "start": "NODE_ENV=production nodemon build/server.js"  },
+    "start": "NODE_ENV=production nodemon build/server.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@aws-sdk/client-sesv2": "^3.999.0",
     "@types/amqplib": "^0.10.7",
     "@types/express": "^5.0.3",
     "@types/nodemailer": "^6.4.17",

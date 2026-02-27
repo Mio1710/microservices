@@ -17,10 +17,11 @@ export class EmailService {
         },
       });
     } else {
+      console.log("Send email with ses smtp");
+
       this.transporter = nodemailer.createTransport({
         host: config.smtp.host,
         port: config.smtp.port,
-        secure: false, // true for 465, false for other ports
         auth: {
           user: config.smtp.user,
           pass: config.smtp.pass,
@@ -35,6 +36,11 @@ export class EmailService {
       to: to,
       subject: subject,
       html: content,
+      ses: {
+        // Optional SES-specific options can be added here
+        ConfigurationSetName: "my-config-set",
+        EmailTags: [{ Name: "tag_name", Value: "tag_value" }],
+      },
     };
 
     try {
