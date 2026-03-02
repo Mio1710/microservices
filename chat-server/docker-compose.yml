@@ -1,4 +1,4 @@
-version: "3.8"
+# version: "3.8"
 networks:
   app-network:
     driver: bridge
@@ -117,9 +117,22 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: user # Set RabbitMQ default user
       RABBITMQ_DEFAULT_PASS: password # Set RabbitMQ default password
+  redis:
+    image: redis:7.4-alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --requirepass redisPassword
+    volumes:
+      - redis-data:/data
+    networks:
+      - app-network
 
 volumes:
   mongo-data:
     driver: local
   mongo-config:
+    driver: local
+  redis-data:
     driver: local

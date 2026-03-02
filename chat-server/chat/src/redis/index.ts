@@ -1,22 +1,17 @@
-// import { createClient, type RedisClientType } from "redis";
+import { createClient, type RedisClientType } from "redis";
 
-// // Define the variable outside the function to persist the instance
-// let redisClient: RedisClientType | null = null;
+// Create and connect the Redis client immediately at module load
+const redisClient: RedisClientType = createClient({
+  url: process.env.REDIS_URL || "redis://redis:password@localhost:6379",
+});
 
-// export async function getRedisClient(): Promise<RedisClientType> {
-//   if (redisClient) {
-//     return redisClient;
-//   }
+redisClient.on("error", (err: Error) => console.error("Redis Client Error", err));
 
-//   // Create new instance if one doesn't exist
-//   redisClient = createClient({
-//     url: process.env.REDIS_URL || "redis://localhost:6379",
-//   });
+// Connect immediately (fire and forget)
+redisClient.connect().catch((err: Error) => {
+  console.error("Failed to connect Redis client on startup", err);
+});
 
-//   redisClient.on("error", (err: Error) => console.error("Redis Client Error", err));
-
-//   // Initialize connection
-//   await redisClient.connect();
-
-//   return redisClient;
-// }
+export function getRedisClient(): RedisClientType {
+  return redisClient;
+}

@@ -81,7 +81,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (activeChat) {
       // Optionally, you can emit an event to join a specific chat room
-      socketInstance.emit('joinRoom', activeChat);
+      socketInstance.emit('joinRoom', activeChat, user?._id);
       // get message for this conversation
       const fetchMessages = async () => {
         const { data } = await getMessages(activeChat);
