@@ -1,4 +1,5 @@
 import { getProfile, useLogin } from '@/api/auth';
+import { getSocketInstance } from '@/socket/handleConnect';
 import { ILoginDTO, IUser } from '@/type/login';
 import {
   createContext,
@@ -36,9 +37,9 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
     toast.success('Login successful!');
   };
   const logout = () => {
+    const socketInstance = getSocketInstance();
+    socketInstance.emit('user_logout');
     localStorage.removeItem('access_token');
-    const checkToken = localStorage.getItem('access_token');
-    console.log('Token after logout:', checkToken);
     setIsAuthenticated(false);
     navigate('/login');
   };

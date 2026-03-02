@@ -2,7 +2,7 @@
 import { getMessages, Message } from '@/api/chat';
 import { IConversation, useChat } from '@/api/swr/chat';
 import { SendMessage } from '@/components/Chat/types';
-import { socketInstance } from '@/socket/handleConnect';
+import { getSocketInstance } from '@/socket/handleConnect';
 import { createSocketHandlers } from '@/socket/handlers';
 import { IUser } from '@/type/login';
 import {
@@ -23,6 +23,7 @@ interface SocketContextType {
 }
 
 const SocketContext = createContext<SocketContextType | undefined>(undefined);
+const socketInstance = getSocketInstance();
 
 export const SocketProvider = ({ children }: { children: ReactNode }) => {
   const { data: initConversations } = useChat();
@@ -54,8 +55,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
   };
   useEffect(() => {
     if (!user) return;
-    socketInstance.auth = { userId: user?._id };
-    socketInstance.connect();
+    // socketInstance.connect();
 
     const handlers = createSocketHandlers(
       setIsConnected,
@@ -79,7 +79,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
   }, [user?._id]);
 
   useEffect(() => {
-    if (activeChat) {
+    if (activeChat && user) {
       // Optionally, you can emit an event to join a specific chat room
       socketInstance.emit('joinRoom', activeChat, user?._id);
       // get message for this conversation
@@ -90,7 +90,6 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
       fetchMessages();
     }
     setConversations(initConversations);
-    console.log('Check conversation: ', conversations);
   }, [activeChat, initConversations]);
 
   const sendMessage = (text: string) => {

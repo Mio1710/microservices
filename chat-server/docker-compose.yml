@@ -119,10 +119,12 @@ services:
       RABBITMQ_DEFAULT_PASS: password # Set RabbitMQ default password
   redis:
     image: redis:7.4-alpine
-    container_name: redis
+    container_name: ${PROJECT}-redis
     restart: unless-stopped
     ports:
       - "6379:6379"
+    environment:
+      REDIS_PASSWORD: redisPassword
     command: redis-server --appendonly yes --requirepass redisPassword
     volumes:
       - redis-data:/data

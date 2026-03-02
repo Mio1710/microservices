@@ -49,9 +49,9 @@ class RabbitMQService {
   }
 
   async notifyReceiver(receiverId: string, messageContent: string, senderName: string, conversationId: string) {
-    console.log("Notifying receiver:", receiverId, messageContent, senderName, conversationId);
-
     await this.requestUserDetails(receiverId, async (user: any) => {
+      console.log("Notifying receiver:", user.email, messageContent, senderName, conversationId);
+
       const notificationPayload = {
         type: "MESSAGE_RECEIVED",
         userId: receiverId,

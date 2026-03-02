@@ -1,7 +1,5 @@
+import { isUserOnline } from "../redis/handlers";
 import { rabbitMQService } from "../services/RabbitMQService";
-import { UserStatusStore } from "./userStatusStore";
-
-const userStatusStore = UserStatusStore.getInstance();
 
 export const handleMessageReceived = async (
   senderName: string,
@@ -10,11 +8,11 @@ export const handleMessageReceived = async (
   receiverIds: string[],
 ) => {
   receiverIds.forEach(async (receiverId) => {
-    const receiverIsOffline = !userStatusStore.isUserOnline(receiverId);
-    console.log(`Sending ${senderName}, ${messageContent}, ${receiverId} is offline:`, receiverIsOffline);
-    console.log("User Status Store:", receiverIsOffline, userStatusStore, !receiverIsOffline);
+    const receiverIsOnline = await isUserOnline(receiverId);
+    console.log(`Sending ${senderName}, ${messageContent}, ${receiverId} is online:`, receiverIsOnline);
+    console.log("User Status Store:", receiverIsOnline);
 
-    if (receiverIsOffline) {
+    if (!receiverIsOnline) {
       console.log(`Receiver ${receiverId} is offline. Sending notification...`);
 
       await rabbitMQService.notifyReceiver(receiverId, messageContent, senderName, conversationId);

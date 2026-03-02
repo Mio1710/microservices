@@ -2,10 +2,10 @@ import { Server } from "http";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { Socket, Server as SocketIOServer } from "socket.io";
 import { Conversation } from "../database";
+import { getOnlineUsers, markUserOffline, markUserOnline } from "../redis/handlers";
 import { insertMessage } from "../services/Message.service";
 import { handleMessageReceived, UserStatusStore } from "../utils";
 
-const onlineUsers = new Map<string, string>();
 const statusStore = UserStatusStore.getInstance();
 
 export const registerSocketEvents = (httpServer: Server) => {
@@ -27,9 +27,9 @@ export const registerSocketEvents = (httpServer: Server) => {
     console.log("Check auth: ", user, statusStore);
 
     socket.on("joinRoom", async (activeChat: number, userId: string) => {
-      statusStore.setUserOnline(userId);
-      console.log("Join room", activeChat);
+      markUserOnline(userId);
       socket.join(activeChat?.toString?.() || String(activeChat));
+      const check = await getOnlineUsers();
     });
 
     socket.on("sendMessage", async (data, cb) => {
@@ -90,10 +90,12 @@ export const registerSocketEvents = (httpServer: Server) => {
       console.log("socket error:", err);
     });
 
-    socket.on("disconnect", async (data) => {
+    socket.on("user_logout", async (data) => {
+      console.log("Check token: ", socket.handshake.auth);
+
+      if (!user) return;
       const { id } = user;
-      console.log("disconnect Socket server successfully", id);
-      statusStore.setUserOffline(id);
+      markUserOffline(id);
     });
   });
   console.log("Start Socket server successfully");
